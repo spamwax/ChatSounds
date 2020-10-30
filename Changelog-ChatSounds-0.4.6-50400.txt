@@ -1,0 +1,23 @@
+------------------------------------------------------------------------
+r62 | dridzt | 2013-10-31 16:43:46 +0000 (Thu, 31 Oct 2013) | 1 line
+Changed paths:
+   A /tags/0.4.6-50400 (from /trunk:61)
+
+Tag as 0.4.6-50400
+------------------------------------------------------------------------
+r61 | dridzt | 2013-10-31 16:41:57 +0000 (Thu, 31 Oct 2013) | 2 lines
+Changed paths:
+   M /trunk/ChatSounds.lua
+   M /trunk/ChatSounds.toc
+   M /trunk/ChatSoundsOptionsFrame.xml
+
+ChatSounds:
+- 5.4.1 Fixes. realmname, microbuttons taint.
+------------------------------------------------------------------------
+r60 | dridzt | 2013-09-11 08:38:38 +0000 (Wed, 11 Sep 2013) | 2 lines
+Changed paths:
+   M /trunk/ChatSounds.toc
+
+ChatSounds:
+- derp the toc update, that's a new one!
+------------------------------------------------------------------------

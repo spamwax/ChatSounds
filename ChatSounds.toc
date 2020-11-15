@@ -1,5 +1,5 @@
 ## Interface: 90001
-## Title: ChatSounds 2.9
+## Title: ChatSounds
 ## Author: Cashrodiirn
 ## Version: v2.9.0
 ## X-Credits: Cashrodiirn, Driizt (Previous Author), AlmostConnected (Original Author), Chochol (Shadowlands changes) 

@@ -1,0 +1,11 @@
+metadata.txt
+metadata.json
+ChatSounds.zip
+.release
+
+**/desktop.ini
+.DS_Store
+.install
+.vscode
+CHANGELOG.md
+README.md

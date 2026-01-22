@@ -26,6 +26,8 @@
         "DEFAULT_CHAT_FRAME",
         "CHAT_TELL_ALERT_TIME",
         "ChatEdit_SetLastTellTarget",
-        "ChatFrame_OnEvent"
+        "ChatFrame_OnEvent",
+        "ChatFrame_AddMessageEventFilter",
+        "DEFAULT_CHAT_FRAME",
     ]
 }

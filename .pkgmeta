@@ -1,0 +1,16 @@
+package-as: ChatSounds
+
+enable-nolib-creation: no
+
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
+
+ignore:
+  - metadata.json
+  - misc
+  - "*.png"
+  - generate_changelog.sh
+  - README.md
+  - CHANGELOG.md
+  - TODO.md

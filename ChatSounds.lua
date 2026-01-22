@@ -1,4 +1,4 @@
-ChatSounds_Version = "2.1"
+ChatSounds_Version = "@project-version@"
 ChatSounds_Player  = "player"
 ChatSounds_Config  = ChatSounds_Config or {}
 
@@ -35,7 +35,7 @@ local function ChatSounds_Slasher(cmd)
     elseif string.lower(cmd) == "!list" then
         if next(ChatSounds_Config[ChatSounds_Player].Blacklist) then
             DEFAULT_CHAT_FRAME:AddMessage("ChatSounds Blacklist:")
-            for k,v in pairs(ChatSounds_Config[ChatSounds_Player].Blacklist) do
+            for k, _ in pairs(ChatSounds_Config[ChatSounds_Player].Blacklist) do
                 DEFAULT_CHAT_FRAME:AddMessage(k)
             end
         else
@@ -58,7 +58,7 @@ function ChatSounds_OnLoad(self)
     -- Register Variable Loading and Chat Events.
     self:RegisterEvent("ADDON_LOADED")
     self:RegisterEvent("PLAYER_LOGIN")
-    
+
     -- Register Slash Command.
     SLASH_CHATSOUNDS1 = "/chatsounds"
     SlashCmdList["CHATSOUNDS"] = ChatSounds_Slasher
@@ -111,9 +111,9 @@ function ChatSounds_InitConfig()
 end
 
 function ChatSounds_OnEvent(self, event, ...)
-    
-    local arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9 = ...;
-    
+
+    local arg1, _, _, _, _, _, _, _, _ = ...;
+
     if (event == "ADDON_LOADED" and arg1 == "ChatSounds" ) then
 
         ChatSounds_InitConfig();
@@ -133,36 +133,36 @@ function ChatSounds_OnEvent(self, event, ...)
 end
 
 -- Chat message filter for WoW 12.0+ API
-function ChatSounds_ChatMessageFilter(frame, event, message, sender, languageName, channelName, ...)
+function ChatSounds_ChatMessageFilter(_, event, _, sender, _, channelName, ...)
     local msgtype = string.sub(event, 10)
-    
+
     -- Skip if config not ready yet
     if not ChatSounds_Config or not ChatSounds_Config[ChatSounds_Player] then
         return false
     end
-    
+
     if msgtype == "CHANNEL" then
         -- Get additional args specific to CHAT_MSG_CHANNEL
         local channelIndex = select(7, ...)  -- channelIndex
         -- Filter AFK/DND/COM or global channels (1-10)
-        if channelName == "AFK" or channelName == "DND" or channelName == "COM" or (channelIndex and channelIndex > 0) then 
-            return false  
+        if channelName == "AFK" or channelName == "DND" or channelName == "COM" or (channelIndex and channelIndex > 0) then
+            return false
         end
         -- Check blacklist
-        if channelName and ChatSounds_Config[ChatSounds_Player].Blacklist[string.lower(channelName)] then 
-            return false 
+        if channelName and ChatSounds_Config[ChatSounds_Player].Blacklist[string.lower(channelName)] then
+            return false
         end
     end
-    
+
     -- Check if message is from player
     local isOutgoing = (sender == UnitName("player"))
-    
+
     if isOutgoing then
         ChatSounds_PlaySound(ChatSounds_Config[ChatSounds_Player].Outgoing[msgtype])
     else
         ChatSounds_PlaySound(ChatSounds_Config[ChatSounds_Player].Incoming[msgtype])
     end
-    
+
     return false  -- Don't filter the message
 end
 
@@ -172,7 +172,7 @@ function ChatSounds_PlaySound(sound)
     if snd:find("%\\") then
         PlaySoundFile(snd, "Master")
     else
-        PlaySound(snd, "Master")
+        PlaySound(ChatSounds_Sound[sound].value, "Master")
     end
 end
 

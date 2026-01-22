@@ -1,7 +1,7 @@
 -- Do not erase!
 ChatSounds_Sound = { }
 
--- Add sounds here. 
+-- Add sounds here.
 --- Addon Sounds
 ChatSounds_Sound["Heart"] = { value="Interface\\AddOns\\ChatSounds\\Sounds\\Heart.mp3" }
 ChatSounds_Sound["Kachink"] = { value="Interface\\AddOns\\ChatSounds\\Sounds\\Kachink.mp3" }

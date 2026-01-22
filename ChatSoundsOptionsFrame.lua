@@ -19,7 +19,7 @@ end
 function ChatSoundsDropDown_Init(self)
     local sound = {}
     local i = 1
-    for name, value in pairs(ChatSounds_Sound) do
+    for name, _ in pairs(ChatSounds_Sound) do
         sound[i] = name
         i = i + 1
     end
@@ -37,7 +37,7 @@ function ChatSoundsDropDown_Init(self)
 
     UIDropDownMenu_AddButton(entry)
 
-    for index, value in pairs(sound) do
+    for _, value in pairs(sound) do
 
         entry.text    = value
         entry.value   = value

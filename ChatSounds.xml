@@ -12,7 +12,7 @@
 				ChatSounds_OnLoad(self);
 			</OnLoad>
 			<OnEvent>
- 				ChatSounds_OnEvent(self, event, ...);
+				ChatSounds_OnEvent(self, event, ...);
 			</OnEvent>
 		</Scripts>
 	</Frame>

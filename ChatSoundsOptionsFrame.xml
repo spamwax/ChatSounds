@@ -60,10 +60,6 @@
 		<Size>
 			<AbsDimension x="433" y="478"/>
 		</Size>
-		<TitleRegion>
-			<Size x="400" y="100"/>
-			<Anchors><Anchor point="TOP"/></Anchors>
-		</TitleRegion>
 		<Anchors>
 			<Anchor point="CENTER"/>
 		</Anchors>
@@ -222,7 +218,7 @@
 				</Anchors>
 			</Frame>
 			
-			<CheckButton name="$parentForceWhispersCheckBox" inherits="OptionsCheckButtonTemplate">
+			<CheckButton name="$parentForceWhispersCheckBox" inherits="InterfaceOptionsCheckButtonTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="$parentGroup11">
 						<Offset>
@@ -232,7 +228,7 @@
 				</Anchors>
 			</CheckButton>
 
-			<Button name="$parentDefaultsButton" inherits="OptionsButtonTemplate" text="DEFAULTS">
+			<Button name="$parentDefaultsButton" inherits="UIPanelButtonTemplate" text="DEFAULTS">
 				<Size>
 					<AbsDimension x="100" y="21"/>
 				</Size>
@@ -250,7 +246,7 @@
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="$parentCancelButton" inherits="OptionsButtonTemplate" text="CANCEL">
+			<Button name="$parentCancelButton" inherits="UIPanelButtonTemplate" text="CANCEL">
 				<Size>
 					<AbsDimension x="100" y="21"/>
 				</Size>
@@ -268,7 +264,7 @@
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="$parentOkayButton" inherits="OptionsButtonTemplate" text="OKAY">
+			<Button name="$parentOkayButton" inherits="UIPanelButtonTemplate" text="OKAY">
 				<Size>
 					<AbsDimension x="100" y="21"/>
 				</Size>
@@ -313,9 +309,11 @@
 				ChatSoundsOptionsFrameGroup10Label:SetText("BNET Whispers");
 				ChatSoundsOptionsFrameGroup11Label:SetText("Custom");
 
-				ChatSoundsOptionsFrameForceWhispersCheckBoxText:SetText("Always play incoming whisper sounds.");
-				ChatSoundsOptionsFrameForceWhispersCheckBoxText:SetTextHeight(12);
-				ChatSoundsOptionsFrameForceWhispersCheckBoxText:SetTextColor(1.0, 1.0, 0.0);
+				if ChatSoundsOptionsFrameForceWhispersCheckBoxText then
+					ChatSoundsOptionsFrameForceWhispersCheckBoxText:SetText("Always play incoming whisper sounds.");
+					ChatSoundsOptionsFrameForceWhispersCheckBoxText:SetTextHeight(12);
+					ChatSoundsOptionsFrameForceWhispersCheckBoxText:SetTextColor(1.0, 1.0, 0.0);
+				end
 
 				self:RegisterForDrag("LeftButton");
 			</OnLoad>
@@ -332,17 +330,18 @@
 					<AbsValue val="32"/>
 				</EdgeSize>
 			</Backdrop> -->
-			<OnEvent>
-				ChatSoundsOptionsFrame_OnEvent (self, event, ...);
-			</OnEvent>
 			<OnShow>
 				ChatSoundsOptionsFrame_OnShow ( self );
 				-- UpdateMicroButtons ( self );
-				Disable_BagButtons ( self );
+				if Disable_BagButtons then
+					Disable_BagButtons ( self );
+				end
 			</OnShow>
 			<OnHide>
 				-- UpdateMicroButtons ( self );
-				Enable_BagButtons ( self );
+				if Enable_BagButtons then
+					Enable_BagButtons ( self );
+				end
 			</OnHide>
 		</Scripts>
 	</Frame>

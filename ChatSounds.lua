@@ -1,19 +1,38 @@
-ChatSounds_Version = "2.0"
+ChatSounds_Version = "2.1"
 ChatSounds_Player  = "player"
 ChatSounds_Config  = ChatSounds_Config or {}
 
 local ChatSounds_label = "|cffFFCC00ChatSounds|r";
+local chatFrameHooked = false
+
+local function ChatSounds_TryHookChatFrame()
+	if (not chatFrameHooked) then
+		ChatFrame_AddMessageEventFilter("CHAT_MSG_GUILD", ChatSounds_ChatMessageFilter)
+		ChatFrame_AddMessageEventFilter("CHAT_MSG_OFFICER", ChatSounds_ChatMessageFilter)
+		ChatFrame_AddMessageEventFilter("CHAT_MSG_PARTY", ChatSounds_ChatMessageFilter)
+		ChatFrame_AddMessageEventFilter("CHAT_MSG_PARTY_LEADER", ChatSounds_ChatMessageFilter)
+		ChatFrame_AddMessageEventFilter("CHAT_MSG_RAID", ChatSounds_ChatMessageFilter)
+		ChatFrame_AddMessageEventFilter("CHAT_MSG_RAID_LEADER", ChatSounds_ChatMessageFilter)
+		ChatFrame_AddMessageEventFilter("CHAT_MSG_INSTANCE_CHAT", ChatSounds_ChatMessageFilter)
+		ChatFrame_AddMessageEventFilter("CHAT_MSG_INSTANCE_CHAT_LEADER", ChatSounds_ChatMessageFilter)
+		ChatFrame_AddMessageEventFilter("CHAT_MSG_CHANNEL", ChatSounds_ChatMessageFilter)
+		chatFrameHooked = true
+		return true
+	end
+	return false
+end
 
 local function ChatSounds_Slasher(cmd)
+	ChatSounds_InitConfig()
 	if not cmd or cmd == "" then
-		ChatSoundsOptionsFrame_Show(ChatSoundsOptionsFrame)
+		ChatSoundsOptionsFrame_Show()
 		DEFAULT_CHAT_FRAME:AddMessage(ChatSounds_label..": '/chatsounds ?' or '/chatsounds !help' for other commands.");
 	elseif string.lower(cmd) == "!help" or cmd == "?" then
 		DEFAULT_CHAT_FRAME:AddMessage(ChatSounds_label.." ".. ChatSounds_Version);
 		DEFAULT_CHAT_FRAME:AddMessage("'/chatsounds customchannel' blacklists/un-blacklists a custom channel from playing sounds");
 		DEFAULT_CHAT_FRAME:AddMessage("    Useful if you have some addon joining a custom channel and spamming messages.");
 		DEFAULT_CHAT_FRAME:AddMessage("'/chatsounds !list' lists the custom channels you have blacklisted if any.");
-	elseif strlower(cmd) == "!list" then
+	elseif string.lower(cmd) == "!list" then
 		if next(ChatSounds_Config[ChatSounds_Player].Blacklist) then
 			DEFAULT_CHAT_FRAME:AddMessage("ChatSounds Blacklist:")
 			for k,v in pairs(ChatSounds_Config[ChatSounds_Player].Blacklist) do
@@ -23,7 +42,7 @@ local function ChatSounds_Slasher(cmd)
 			DEFAULT_CHAT_FRAME:AddMessage(ChatSounds_label..": no blacklisted channels")
 		end
 	else
-		cmd = strlower(cmd)
+		cmd = string.lower(cmd)
 		if ChatSounds_Config[ChatSounds_Player].Blacklist[cmd] then
 			ChatSounds_Config[ChatSounds_Player].Blacklist[cmd] = nil
 			DEFAULT_CHAT_FRAME:AddMessage(ChatSounds_label..": ".. cmd .. " removed from Blacklist.");
@@ -38,19 +57,7 @@ function ChatSounds_OnLoad(self)
 
 	-- Register Variable Loading and Chat Events.
 	self:RegisterEvent("ADDON_LOADED")
--- 	self:RegisterEvent("CHAT_MSG_WHISPER")
--- 	self:RegisterEvent("CHAT_MSG_WHISPER_INFORM")
--- 	self:RegisterEvent("CHAT_MSG_BN_WHISPER")
--- 	self:RegisterEvent("CHAT_MSG_BN_WHISPER_INFORM")
-	self:RegisterEvent("CHAT_MSG_GUILD")
-	self:RegisterEvent("CHAT_MSG_OFFICER")
-	self:RegisterEvent("CHAT_MSG_PARTY")
-	self:RegisterEvent("CHAT_MSG_PARTY_LEADER")
-	self:RegisterEvent("CHAT_MSG_RAID")
-	self:RegisterEvent("CHAT_MSG_RAID_LEADER")
-	self:RegisterEvent("CHAT_MSG_INSTANCE_CHAT")
-	self:RegisterEvent("CHAT_MSG_INSTANCE_CHAT_LEADER")
-	self:RegisterEvent("CHAT_MSG_CHANNEL")
+	self:RegisterEvent("PLAYER_LOGIN")
 	
 	-- Register Slash Command.
 	SLASH_CHATSOUNDS1 = "/chatsounds"
@@ -110,24 +117,53 @@ function ChatSounds_OnEvent(self, event, ...)
 	if (event == "ADDON_LOADED" and arg1 == "ChatSounds" ) then
 
 		ChatSounds_InitConfig();
- 		hooksecurefunc("ChatFrame_OnEvent", ChatSounds_ChatFrame_OnEvent);
+		if not ChatSounds_TryHookChatFrame() then
+			self:RegisterEvent("PLAYER_LOGIN")
+		end
 		-- ChatSounds are now loaded!
 		DEFAULT_CHAT_FRAME:AddMessage(ChatSounds_label.." ".. ChatSounds_Version .. " are loaded.");
 		self:UnregisterEvent("ADDON_LOADED");
 
-	elseif (strsub (event, 1, 8) == "CHAT_MSG") then
-		local msgtype = strsub (event, 10)
-		if msgtype == "CHANNEL" then -- exclude afk/dnd, global channel and blacklisted custom channels messages.
-			if arg6 == "AFK" or arg6 == "DND" or arg6 == "COM" or arg7 > 0 then return end
-			if arg9 and ChatSounds_Config[ChatSounds_Player].Blacklist[strlower(arg9)] then return end
-		end
-		if (arg2 == UnitName ("player")) then
-			ChatSounds_PlaySound(ChatSounds_Config[ChatSounds_Player].Outgoing[msgtype]);
-		else
-			ChatSounds_PlaySound(ChatSounds_Config[ChatSounds_Player].Incoming[msgtype]);
+	elseif (event == "PLAYER_LOGIN") then
+		if ChatSounds_TryHookChatFrame() then
+			self:UnregisterEvent("PLAYER_LOGIN")
 		end
 
 	end
+end
+
+-- Chat message filter for WoW 12.0+ API
+function ChatSounds_ChatMessageFilter(frame, event, message, sender, languageName, channelName, ...)
+	local msgtype = string.sub(event, 10)
+	
+	-- Skip if config not ready yet
+	if not ChatSounds_Config or not ChatSounds_Config[ChatSounds_Player] then
+		return false
+	end
+	
+	if msgtype == "CHANNEL" then
+		-- Get additional args specific to CHAT_MSG_CHANNEL
+		local channelIndex = select(7, ...)  -- channelIndex
+		-- Filter AFK/DND/COM or global channels (1-10)
+		if channelName == "AFK" or channelName == "DND" or channelName == "COM" or (channelIndex and channelIndex > 0) then 
+			return false  
+		end
+		-- Check blacklist
+		if channelName and ChatSounds_Config[ChatSounds_Player].Blacklist[string.lower(channelName)] then 
+			return false 
+		end
+	end
+	
+	-- Check if message is from player
+	local isOutgoing = (sender == UnitName("player"))
+	
+	if isOutgoing then
+		ChatSounds_PlaySound(ChatSounds_Config[ChatSounds_Player].Outgoing[msgtype])
+	else
+		ChatSounds_PlaySound(ChatSounds_Config[ChatSounds_Player].Incoming[msgtype])
+	end
+	
+	return false  -- Don't filter the message
 end
 
 function ChatSounds_PlaySound(sound)
@@ -140,46 +176,11 @@ function ChatSounds_PlaySound(sound)
 	end
 end
 
-
-function ChatSounds_ChatFrame_OnEvent (self, event, ...)
-	local arg1, arg2, ctype
-	if not ( strsub(event, 1, 8) == "CHAT_MSG" ) then
-		return
-	else
-		arg1, arg2 = ...
-		ctype = strsub(event, 10)
+function ChatSoundsOptionsFrame_Show()
+	if ChatSoundsOptionsFrame and InterfaceOptionsFrame_OpenToCategory then
+		InterfaceOptionsFrame_OpenToCategory(ChatSoundsOptionsFrame)
+		InterfaceOptionsFrame_OpenToCategory(ChatSoundsOptionsFrame)
+	elseif ChatSoundsOptionsFrame then
+		ChatSoundsOptionsFrame:Show()
 	end
-	if (event == "CHAT_MSG_WHISPER") then
-		if not ((strsub(arg1, 1, 4) == "LVPN") or (strsub(arg1, 1, 4) == "LVBM")) then --- Deadly Boss Mod filter
--- 			if arg2 and ctype then ChatEdit_SetLastTellTarget(arg2,ctype) end
-	
-			if (self.tellTimer and (GetTime() > self.tellTimer)) or 
-			   (ChatSounds_Config[ChatSounds_Player].ForceWhispers) then
-			  if arg6 == "GM" or arg6 == "DEV" then 
-			  	ChatSounds_PlaySound (ChatSounds_Config[ChatSounds_Player].Incoming["GMWHISPER"])
-			  else
-					ChatSounds_PlaySound (ChatSounds_Config[ChatSounds_Player].Incoming["WHISPER"])
-				end
-			end
-	
-			self.tellTimer = GetTime() + CHAT_TELL_ALERT_TIME
-		end
-	elseif (event == "CHAT_MSG_WHISPER_INFORM") then
-		if not ((strsub(arg1, 1, 4) == "LVPN") or (strsub(arg1, 1, 4) == "LVBM")) then --- Deadly Boss Mod filter
-			if (arg2) then ChatEdit_SetLastTellTarget(arg2,"WHISPER") end
-			ChatSounds_PlaySound (ChatSounds_Config[ChatSounds_Player].Outgoing["WHISPER"])
-		end
-	elseif (event == "CHAT_MSG_BN_WHISPER") then
--- 		if (arg2) then ChatEdit_SetLastTellTarget(arg2,"BN_WHISPER") end
-		if (self.tellTimer and (GetTime() > self.tellTimer)) or 
-		   (ChatSounds_Config[ChatSounds_Player].ForceWhispers) then
-		   ChatSounds_PlaySound (ChatSounds_Config[ChatSounds_Player].Incoming["BNWHISPER"])
-		end
-
-		self.tellTimer = GetTime() + CHAT_TELL_ALERT_TIME
-	elseif (event == "CHAT_MSG_BN_WHISPER_INFORM") then
-		if (arg2) then ChatEdit_SetLastTellTarget(arg2,"BN_WHISPER") end
-		ChatSounds_PlaySound (ChatSounds_Config[ChatSounds_Player].Outgoing["BNWHISPER"])
-	end
-
 end

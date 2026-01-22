@@ -16,10 +16,15 @@
 -WoW 2.0 and Burning Crusade compatibility update
 
 0.10 to 0.10.1 (11200) notes
+
+2025.11.28 (90001) notes
+===============================================
+- migrated the options frame into the Interface Options system and ensured `/chatsounds` opens the correct panel under the current API.
+- replaced the deprecated button/checkbutton templates and removed unsupported XML nodes so the frame loads without schema errors.
+- guarded the bag button helpers and text widgets, and refreshed configuration state before showing/saving settings to avoid nil globals.
 ===============================================
 -Added several new sounds and changed around defaults.
 -Internal game sounds no longer selectable in dropdowns.
-(can be reactivated by uncommenting them in SoundList.lua)
 -Title in addons game menu updated to match the addon version.
 
 0.9 to 0.10 (11200) notes

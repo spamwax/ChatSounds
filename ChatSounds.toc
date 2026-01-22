@@ -1,7 +1,7 @@
-## Interface: 90001
+## Interface: 120000
 ## Title: ChatSounds
 ## Author: Cashrodiirn
-## Version: v2.9.0
+## Version: v2.9.1
 ## X-Credits: Cashrodiirn, Driizt (Previous Author), AlmostConnected (Original Author), Chochol (Shadowlands changes) 
 ## Notes: Enables user defined sounds for Party, Guild, Raid and Custom Channel chat messages.
 ## SavedVariables: ChatSounds_Config
